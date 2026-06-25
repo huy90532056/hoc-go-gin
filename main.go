@@ -45,7 +45,7 @@ func main() {
 			categoryHandlerV1 := v1handler.NewCategoryHandler()
 
 			category.GET("/:category", categoryHandlerV1.GetCategoryByCategoryV1)
-
+			category.POST("/", categoryHandlerV1.PostCategoriesV1)
 		}
 
 		news := v1.Group("/news")
@@ -54,8 +54,10 @@ func main() {
 
 			news.GET("/", categoryHandlerV1.GetNewsV1)
 			news.GET("/:slug", categoryHandlerV1.GetNewsV1)
+			news.POST("/", categoryHandlerV1.PostNewsV1)
+			news.POST("/upload-file", categoryHandlerV1.PostUploadFileNewsV1)
+			news.POST("/upload-multiple-file", categoryHandlerV1.PostUploadMultipleFileNewsV1)
 		}
-
 	}
 
 	v2 := r.Group("/api/v2")

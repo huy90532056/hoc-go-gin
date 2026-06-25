@@ -17,41 +17,60 @@ func HandleValidationErrors(err error) gin.H {
 		errors := make(map[string]string)
 
 		for _, e := range validationError {
+			root := strings.Split(e.Namespace(), ".")[0]
+
+			rawPath := strings.TrimPrefix(e.Namespace(), root+".")
+
+			parts := strings.Split(rawPath, ".")
+
+			for i, part := range parts {
+				if strings.Contains(part, "[") {
+					idx := strings.Index(part, "[")
+					base := camelToSnake(part[:idx])
+					index := part[idx:]
+					parts[i] = base + index
+				} else {
+					parts[i] = camelToSnake(part)
+				}
+			}
+
+			fieldPath := strings.Join(parts, ".")
+
 			switch e.Tag() {
 			case "gt":
-				errors[e.Field()] = e.Field() + " phai lon hon gia tri toi thieu"
+				errors[fieldPath] = fmt.Sprintf("%s phai lon hon %s", fieldPath, e.Param())
 			case "lt":
-				errors[e.Field()] = e.Field() + " phai lon hon gia tri toi thieu"
+				errors[fieldPath] = fmt.Sprintf("%s phai nho hon %s", fieldPath, e.Param())
 			case "gte":
-				errors[e.Field()] = e.Field() + " phai lon hon hoac bang gia tri toi thieu"
+				errors[fieldPath] = fmt.Sprintf("%s phai lon hon hoac bang %s", fieldPath, e.Param())
 			case "lte":
-				errors[e.Field()] = e.Field() + " phai nho hon hoac bang gia tri toi thieu"
+				errors[fieldPath] = fmt.Sprintf("%s phai nho hon hoac bang $s", fieldPath, e.Param())
 			case "uuid":
-				errors[e.Field()] = e.Field() + " phai la UUID hop le"
+				errors[fieldPath] = fmt.Sprintf("%s phai la UUID hop le", fieldPath)
 			case "slug":
-				errors[e.Field()] = e.Field() + " phai la Slug hop le"
+				errors[fieldPath] = fmt.Sprintf("%s phai la Slug hop le", fieldPath)
 			case "min":
-				errors[e.Field()] = fmt.Sprintf("%s phai nhieu hon %s ky tu", e.Field(), e.Param())
+				errors[fieldPath] = fmt.Sprintf("%s phai nhieu hon %s ky tu", fieldPath, e.Param())
 			case "max":
-				errors[e.Field()] = fmt.Sprintf("%s phai it hon %s ky tu", e.Field(), e.Param())
+				errors[fieldPath] = fmt.Sprintf("%s phai it hon %s ky tu", fieldPath, e.Param())
 			case "min_int":
-				errors[e.Field()] = fmt.Sprintf("%s phai co gia tri lon hon %s", e.Field(), e.Param())
+				errors[fieldPath] = fmt.Sprintf("%s phai co gia tri lon hon %s", fieldPath, e.Param())
 			case "max_int":
-				errors[e.Field()] = fmt.Sprintf("%s phai co gia tri be hon %s", e.Field(), e.Param())
+				errors[fieldPath] = fmt.Sprintf("%s phai co gia tri be hon %s", fieldPath, e.Param())
 			case "oneof":
 				allowedValues := strings.Join(strings.Split(e.Param(), " "), ", ")
-				errors[e.Field()] = fmt.Sprintf("%s phai la 1 trong cac gia tri: %s", e.Field(), allowedValues)
+				errors[fieldPath] = fmt.Sprintf("%s phai la 1 trong cac gia tri: %s", fieldPath, allowedValues)
 			case "required":
-				errors[e.Field()] = e.Field() + " la bat buoc"
+				errors[fieldPath] = fmt.Sprintf("%s la bat buoc", fieldPath)
 			case "search":
-				errors[e.Field()] = e.Field() + " chi duoc phep chu thuong, in hoa, so va khoang trang"
+				errors[fieldPath] = fmt.Sprintf("%s chi duoc phep chu thuong, in hoa, so va khoang trang", fieldPath)
 			case "email":
-				errors[e.Field()] = e.Field() + " phai dung dinh dang la email"
+				errors[fieldPath] = fmt.Sprintf("%s phai dung dinh dang la email", fieldPath)
 			case "datetime":
-				errors[e.Field()] = e.Field() + " phai dung dinh dang la nam, thang, ngay"
+				errors[fieldPath] = fmt.Sprintf("%s phai dung dinh dang la nam, thang, ngay", fieldPath)
 			case "file_ext":
 				allowedValues := strings.Join(strings.Split(e.Param(), " "), ", ")
-				errors[e.Field()] = fmt.Sprintf("%s phai la 1 trong cac gia tri: %s", e.Field(), allowedValues)
+				errors[fieldPath] = fmt.Sprintf("%s phai la 1 trong cac gia tri: %s", fieldPath, allowedValues)
 			}
 		}
 
