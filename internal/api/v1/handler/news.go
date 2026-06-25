@@ -109,6 +109,8 @@ func (n *NewsHandler) PostUploadFileNewsV1(ctx *gin.Context) {
 }
 
 func (n *NewsHandler) PostUploadMultipleFileNewsV1(ctx *gin.Context) {
+	const publicURL = "http://localhost:8080/images/"
+
 	var params PostNewsV1Param
 
 	if err := ctx.ShouldBind(&params); err != nil {
@@ -140,7 +142,8 @@ func (n *NewsHandler) PostUploadMultipleFileNewsV1(ctx *gin.Context) {
 			continue
 		}
 
-		successFiles = append(successFiles, filename)
+		publicImageUrl := publicURL + filename
+		successFiles = append(successFiles, publicImageUrl)
 	}
 
 	resp := gin.H{

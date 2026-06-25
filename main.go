@@ -3,17 +3,29 @@ package main
 import (
 	v1handler "hoc-thuat-toan/internal/api/v1/handler"
 	v2handler "hoc-thuat-toan/internal/api/v2/handler"
+	"hoc-thuat-toan/middleware"
 	"hoc-thuat-toan/utils"
+	"log"
 
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 )
 
 func main() {
-	r := gin.Default()
-
 	if err := utils.RegisterValidators(); err != nil {
 		panic(err)
 	}
+
+	err := godotenv.Load()
+	if err != nil {
+		log.Println("No .env file found")
+	}
+
+	r := gin.Default()
+
+	go middleware.CleanupClients()
+
+	r.Use(middleware.ApiKeyMiddleware(), middleware.RateLimitingMiddleware())
 
 	v1 := r.Group("/api/v1")
 	{
@@ -70,6 +82,8 @@ func main() {
 		v2.PUT("/users/:id", userHandlerV2.PutUsersV2)
 		v2.DELETE("/users/:id", userHandlerV2.DeleteUsersV2)
 	}
+
+	r.StaticFS("/images", gin.Dir("./uploads", false))
 
 	r.Run(":8080")
 }
