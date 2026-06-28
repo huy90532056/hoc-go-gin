@@ -76,5 +76,7 @@ func RateLimitingMiddleware() gin.HandlerFunc {
 				"message": "Ban da gui qua nhieu request. Hay gui lai sau",
 			})
 		}
+
+		ctx.Next()
 	}
 }

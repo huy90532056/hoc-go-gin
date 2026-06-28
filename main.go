@@ -17,6 +17,7 @@ func main() {
 	}
 
 	err := godotenv.Load()
+
 	if err != nil {
 		log.Println("No .env file found")
 	}
@@ -25,7 +26,11 @@ func main() {
 
 	go middleware.CleanupClients()
 
-	r.Use(middleware.ApiKeyMiddleware(), middleware.RateLimitingMiddleware())
+	r.Use(
+		middleware.LoggerMiddleware(),
+		middleware.ApiKeyMiddleware(),
+		middleware.RateLimitingMiddleware(),
+	)
 
 	v1 := r.Group("/api/v1")
 	{
